@@ -45,7 +45,7 @@ return [
         ],
 
         'student' => [
-            'driver' => 'session',
+            'driver' => 'jwt',
             'provider' => 'students',
         ],
     ],
