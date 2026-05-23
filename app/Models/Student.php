@@ -2,18 +2,18 @@
 
 namespace App\Models;
 
-use App\Enums\UserRole;
-use Database\Factories\UserFactory;
+use Database\Factories\StudentFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-class User extends Authenticatable
+class Student extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
+    /** @use HasFactory<StudentFactory> */
     use HasApiTokens, HasFactory, HasUuids, Notifiable;
 
     /**
@@ -22,10 +22,13 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'role',
-        'name',
+        'faculty_id',
+        'nim',
+        'full_name',
         'email',
         'password',
+        'is_eligible',
+        'enrollment_year',
     ];
 
     /**
@@ -46,28 +49,39 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'role' => UserRole::class,
+            'is_eligible' => 'boolean',
+            'enrollment_year' => 'integer',
             'password' => 'hashed',
         ];
     }
 
     /**
-     * Election periods created by this user.
+     * Faculty this student belongs to.
      *
-     * @return HasMany<ElectionPeriod, $this>
+     * @return BelongsTo<Faculty, $this>
      */
-    public function createdElectionPeriods(): HasMany
+    public function faculty(): BelongsTo
     {
-        return $this->hasMany(ElectionPeriod::class, 'created_by');
+        return $this->belongsTo(Faculty::class);
     }
 
     /**
-     * Audit log entries authored by this user.
+     * Candidate memberships of this student.
      *
-     * @return HasMany<AuditLog, $this>
+     * @return HasMany<CandidateMember, $this>
      */
-    public function auditLogs(): HasMany
+    public function candidateMemberships(): HasMany
     {
-        return $this->hasMany(AuditLog::class, 'actor_id');
+        return $this->hasMany(CandidateMember::class);
+    }
+
+    /**
+     * Ballots cast by this student.
+     *
+     * @return HasMany<Ballot, $this>
+     */
+    public function ballots(): HasMany
+    {
+        return $this->hasMany(Ballot::class);
     }
 }
