@@ -57,9 +57,23 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LoginResponseAdmin'
+                $ref: '#/components/schemas/LoginResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/admin/auth/logout:
+    post:
+      tags: [Auth]
+      summary: Admin logout (invalidate JWT)
+      responses:
+        '200':
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
 
@@ -831,7 +845,7 @@ components:
         password:
           type: string
 
-    LoginResponseAdmin:
+    LoginResponse:
       type: object
       properties:
         token:
