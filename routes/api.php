@@ -1,10 +1,17 @@
 <?php
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\Api\Auth\AdminAuthController;
+use App\Http\Controllers\Api\Auth\StudentAuthController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+Route::get('/test', fn () => response()->json(['message' => 'Hello World!']));
 
-Route::get('/test', fn() => response()->json(['message' => 'Hello World!']));
+Route::prefix('admin/auth')->group(function () {
+    Route::post('/', [AdminAuthController::class, 'login']);
+    Route::post('/logout', [AdminAuthController::class, 'logout'])->middleware('auth:web');
+});
+
+Route::prefix('student/auth')->group(function () {
+    Route::post('/', [StudentAuthController::class, 'login']);
+    Route::post('/logout', [StudentAuthController::class, 'logout'])->middleware('auth:student');
+});

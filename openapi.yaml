@@ -57,9 +57,60 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LoginResponseAdmin'
+                $ref: '#/components/schemas/LoginResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/admin/auth/logout:
+    post:
+      tags: [Auth]
+      summary: Admin logout (invalidate JWT)
+      responses:
+        '200':
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/student/auth:
+    post:
+      tags: [Auth]
+      summary: Student login (by email or NIM)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequestStudent'
+      responses:
+        '200':
+          description: Login success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/student/auth/logout:
+    post:
+      tags: [Auth]
+      summary: Student logout (invalidate JWT)
+      responses:
+        '200':
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
 
@@ -831,7 +882,18 @@ components:
         password:
           type: string
 
-    LoginResponseAdmin:
+    LoginRequestStudent:
+      type: object
+      required: [identifier, password]
+      properties:
+        identifier:
+          type: string
+          maxLength: 255
+          description: Student email or NIM
+        password:
+          type: string
+
+    LoginResponse:
       type: object
       properties:
         token:
