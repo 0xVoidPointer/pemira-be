@@ -8,17 +8,10 @@ export default defineConfig({
     resolve: { tsconfigPaths: true },
     plugins: [
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.tsx'],
+            input: ['resources/css/app.css', 'resources/js/app.js'],
             refresh: true,
         }),
         tailwindcss(),
-        tanstackRouter({
-            target: 'react',
-            routesDirectory: 'src/routes',
-            generatedRouteTree: 'src/routeTree.gen.ts',
-            autoCodeSplitting: true,
-        }),
-        viteReact(),
     ],
     server: {
         host: '127.0.0.1',
