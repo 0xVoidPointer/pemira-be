@@ -27,7 +27,7 @@ class StudentAuthController extends Controller
             return response()->json(['error' => 'Invalid credentials'], 401);
         }
 
-        $token = auth('student')->login($student);
+        $token = auth('api')->login($student);
 
         return response()->json(['token' => $token]);
     }

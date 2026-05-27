@@ -40,11 +40,11 @@ return [
 
     'guards' => [
         'web' => [
-            'driver' => 'jwt',
+            'driver' => 'session',
             'provider' => 'users',
         ],
 
-        'student' => [
+        'api' => [
             'driver' => 'jwt',
             'provider' => 'students',
         ],
