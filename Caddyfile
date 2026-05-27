@@ -1,0 +1,22 @@
+{
+    frankenphp
+    order php_server before file_server
+}
+
+http://:80 {
+    root * /app/public
+    encode zstd gzip
+
+    @block_storage_php {
+                           path_regexp ^/storage/.*\.php$
+                       }
+
+    respond @block_storage_php "Access Denied" 403
+
+    request_body {
+                     max_size 100MB
+                 }
+
+    php_server
+    file_server
+}

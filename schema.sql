@@ -2,13 +2,13 @@
 
 CREATE TABLE users
 (
-    id         CHAR(36)                         NOT NULL DEFAULT (UUID()),
-    role       ENUM ('ADMIN','SUPER_ADMIN')     NOT NULL,
-    name       VARCHAR(255)                     NOT NULL,
-    email      VARCHAR(255)                     NOT NULL,
-    password   TEXT                             NOT NULL,
-    created_at TIMESTAMP                        NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP                        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    id         CHAR(36)                     NOT NULL DEFAULT (UUID()),
+    role       ENUM ('ADMIN','SUPER_ADMIN') NOT NULL,
+    name       VARCHAR(255)                 NOT NULL,
+    email      VARCHAR(255)                 NOT NULL,
+    password   TEXT                         NOT NULL,
+    created_at TIMESTAMP                    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP                    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id)
 ) ENGINE = InnoDB;
 
@@ -45,18 +45,18 @@ CREATE TABLE students
 
 CREATE TABLE election_periods
 (
-    id            CHAR(36)                         NOT NULL DEFAULT (UUID()),
-    name          VARCHAR(255)                     NOT NULL,
-    year          SMALLINT                         NOT NULL,
-    theme_config  JSON                             NOT NULL,
-    reg_start_at  TIMESTAMP                        NOT NULL,
-    reg_end_at    TIMESTAMP                        NOT NULL,
-    vote_start_at TIMESTAMP                        NOT NULL,
-    vote_end_at   TIMESTAMP                        NOT NULL,
-    status        ENUM ('DRAFT','VOTING','DONE')   NOT NULL DEFAULT 'DRAFT',
-    created_by    CHAR(36)                         NULL,
-    created_at    TIMESTAMP                        NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at    TIMESTAMP                        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    id            CHAR(36)                       NOT NULL DEFAULT (UUID()),
+    name          VARCHAR(255)                   NOT NULL,
+    year          SMALLINT                       NOT NULL,
+    theme_config  JSON                           NOT NULL,
+    reg_start_at  TIMESTAMP                      NOT NULL,
+    reg_end_at    TIMESTAMP                      NOT NULL,
+    vote_start_at TIMESTAMP                      NOT NULL,
+    vote_end_at   TIMESTAMP                      NOT NULL,
+    status        ENUM ('DRAFT','VOTING','DONE') NOT NULL DEFAULT 'DRAFT',
+    created_by    CHAR(36)                       NULL,
+    created_at    TIMESTAMP                      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at    TIMESTAMP                      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     UNIQUE KEY uq_periods_year (year),
     KEY idx_periods_status (status),
@@ -67,19 +67,30 @@ CREATE TABLE election_periods
     CONSTRAINT chk_periods_reg_before_vote CHECK (vote_start_at >= reg_end_at)
 ) ENGINE = InnoDB;
 
+CREATE TABLE election_schedules
+(
+    id            CHAR(36)  NOT NULL PRIMARY KEY DEFAULT (UUID()),
+    period_id     CHAR(36)  NOT NULL,
+    vote_start_at TIMESTAMP NOT NULL,
+    vote_end_at   TIMESTAMP NOT NULL,
+    created_at    TIMESTAMP NOT NULL,
+    updated_at    TIMESTAMP NOT NULL,
+    CONSTRAINT chk_periods_vote_window CHECK (vote_end_at > vote_start_at)
+) ENGINE = InnoDB;
+
 CREATE TABLE election_categories
 (
-    id               CHAR(36)                                       NOT NULL DEFAULT (UUID()),
-    period_id        CHAR(36)                                       NOT NULL,
-    scope_faculty_id CHAR(36)                                       NULL,
-    type             ENUM ('PRESIDENT','DPM','FACULTY_GOVERNOR')    NOT NULL,
-    title            VARCHAR(255)                                   NOT NULL,
+    id               CHAR(36)                                    NOT NULL DEFAULT (UUID()),
+    period_id        CHAR(36)                                    NOT NULL,
+    scope_faculty_id CHAR(36)                                    NULL,
+    type             ENUM ('PRESIDENT','DPM','FACULTY_GOVERNOR') NOT NULL,
+    title            VARCHAR(255)                                NOT NULL,
     description      TEXT,
-    vote_start_at    TIMESTAMP                                      NULL,
-    vote_end_at      TIMESTAMP                                      NULL,
-    max_winners      SMALLINT                                       NOT NULL DEFAULT 1,
-    created_at       TIMESTAMP                                      NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at       TIMESTAMP                                      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    vote_start_at    TIMESTAMP                                   NULL,
+    vote_end_at      TIMESTAMP                                   NULL,
+    max_winners      SMALLINT                                    NOT NULL DEFAULT 1,
+    created_at       TIMESTAMP                                   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at       TIMESTAMP                                   NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     KEY idx_category_period (period_id),
     KEY idx_category_scope_faculty (scope_faculty_id),
@@ -89,15 +100,15 @@ CREATE TABLE election_categories
 
 CREATE TABLE candidates
 (
-    id          CHAR(36)    NOT NULL DEFAULT (UUID()),
-    category_id CHAR(36)    NOT NULL,
-    number      SMALLINT    NOT NULL,
-    vision      TEXT        NOT NULL,
-    mission     TEXT        NOT NULL,
+    id          CHAR(36)  NOT NULL DEFAULT (UUID()),
+    category_id CHAR(36)  NOT NULL,
+    number      SMALLINT  NOT NULL,
+    vision      TEXT      NOT NULL,
+    mission     TEXT      NOT NULL,
     photo_url   TEXT,
     video_url   TEXT,
-    created_at  TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at  TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     UNIQUE KEY uq_candidates_number_per_category (category_id, number),
     KEY idx_candidates_category (category_id),
@@ -106,12 +117,12 @@ CREATE TABLE candidates
 
 CREATE TABLE candidate_members
 (
-    id           CHAR(36)                              NOT NULL DEFAULT (UUID()),
-    candidate_id CHAR(36)                              NOT NULL,
-    student_id   CHAR(36)                              NOT NULL,
-    role         ENUM ('INDIVIDUAL','KETUA','WAKIL')   NOT NULL,
-    created_at   TIMESTAMP                             NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at   TIMESTAMP                             NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    id           CHAR(36)                            NOT NULL DEFAULT (UUID()),
+    candidate_id CHAR(36)                            NOT NULL,
+    student_id   CHAR(36)                            NOT NULL,
+    role         ENUM ('INDIVIDUAL','KETUA','WAKIL') NOT NULL,
+    created_at   TIMESTAMP                           NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at   TIMESTAMP                           NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     KEY idx_candidate_members_candidate (candidate_id),
     KEY idx_candidate_members_student (student_id),
@@ -121,10 +132,10 @@ CREATE TABLE candidate_members
 
 CREATE TABLE ballots
 (
-    id          CHAR(36)    NOT NULL DEFAULT (UUID()),
-    category_id CHAR(36)    NOT NULL,
-    student_id  CHAR(36)    NOT NULL,
-    voted_at    TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    id          CHAR(36)  NOT NULL DEFAULT (UUID()),
+    category_id CHAR(36)  NOT NULL,
+    student_id  CHAR(36)  NOT NULL,
+    voted_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     ip_address  VARCHAR(20),
     user_agent  TEXT,
     PRIMARY KEY (id),
@@ -136,10 +147,10 @@ CREATE TABLE ballots
 
 CREATE TABLE vote_tallies
 (
-    id           CHAR(36)    NOT NULL DEFAULT (UUID()),
-    candidate_id CHAR(36)    NOT NULL,
-    vote_count   INT         NOT NULL DEFAULT 0,
-    last_updated TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    id           CHAR(36)  NOT NULL DEFAULT (UUID()),
+    candidate_id CHAR(36)  NOT NULL,
+    vote_count   INT       NOT NULL DEFAULT 0,
+    last_updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     UNIQUE KEY uq_vote_tallies_candidate (candidate_id),
     CONSTRAINT fk_tallies_candidate FOREIGN KEY (candidate_id) REFERENCES candidates (id) ON DELETE CASCADE,
