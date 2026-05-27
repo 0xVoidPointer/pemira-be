@@ -6,6 +6,10 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Exceptions\TokenBlacklistedException;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
@@ -19,7 +23,16 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->redirectGuestsTo(function (Request $request) {
+
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->json([
+                    'error' => 'Unauthenticated.',
+                ], Response::HTTP_UNAUTHORIZED);
+            }
+
+            return route('login');
+        });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(function (Request $request) {
@@ -28,31 +41,31 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->render(function (TokenExpiredException $e, Request $request) {
             if ($request->is('api/*') || $request->expectsJson()) {
-                return response()->json(['error' => 'Token expired'], 401);
+                return response()->json(['error' => 'Token expired'], Response::HTTP_UNAUTHORIZED);
             }
         });
 
         $exceptions->render(function (TokenInvalidException $e, Request $request) {
             if ($request->is('api/*') || $request->expectsJson()) {
-                return response()->json(['error' => 'Token invalid'], 401);
+                return response()->json(['error' => 'Token invalid'], Response::HTTP_UNAUTHORIZED);
             }
         });
 
         $exceptions->render(function (TokenBlacklistedException $e, Request $request) {
             if ($request->is('api/*') || $request->expectsJson()) {
-                return response()->json(['error' => 'Token blacklisted'], 401);
+                return response()->json(['error' => 'Token blacklisted'], Response::HTTP_UNAUTHORIZED);
             }
         });
 
         $exceptions->render(function (JWTException $e, Request $request) {
             if ($request->is('api/*') || $request->expectsJson()) {
-                return response()->json(['error' => $e->getMessage() ?: 'Token error'], 401);
+                return response()->json(['error' => $e->getMessage() ?: 'Token error'], Response::HTTP_UNAUTHORIZED);
             }
         });
 
         $exceptions->render(function (AuthenticationException $e, Request $request) {
             if ($request->is('api/*') || $request->expectsJson()) {
-                return response()->json(['error' => 'Unauthenticated'], 401);
+                return response()->json(['error' => 'Unauthenticated'], Response::HTTP_UNAUTHORIZED);
             }
         });
 
@@ -60,7 +73,31 @@ return Application::configure(basePath: dirname(__DIR__))
             if ($request->is('api/*') || $request->expectsJson()) {
                 return response()->json([
                     'error' => $e->validator->errors()->first() ?: 'Validation failed',
-                ], 400);
+                ], Response::HTTP_BAD_REQUEST);
+            }
+        });
+
+        $exceptions->render(function (ConflictHttpException $e, Request $request) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->json([
+                    'error' => $e->getMessage() ?: 'Conlict',
+                ], Response::HTTP_CONFLICT);
+            }
+        });
+
+        $exceptions->render(function (NotFoundHttpException $e, Request $request) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->json([
+                    'error' => $e->getMessage() ?: 'Not Found',
+                ], Response::HTTP_NOT_FOUND);
+            }
+        });
+
+        $exceptions->render(function (BadRequestHttpException $e, Request $request) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->json([
+                    'error' => $e->getMessage() ?: 'Bad Request',
+                ], Response::HTTP_BAD_REQUEST);
             }
         });
     })->create();
