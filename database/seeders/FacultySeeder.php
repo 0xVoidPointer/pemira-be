@@ -10,16 +10,11 @@ class FacultySeeder extends Seeder
     public function run(): void
     {
         $faculties = [
-            ['code' => 'FT', 'name' => 'Fakultas Teknik'],
-            ['code' => 'FILKOM', 'name' => 'Fakultas Ilmu Komputer'],
-            ['code' => 'FEB', 'name' => 'Fakultas Ekonomi dan Bisnis'],
-            ['code' => 'FH', 'name' => 'Fakultas Hukum'],
-            ['code' => 'FK', 'name' => 'Fakultas Kedokteran'],
-            ['code' => 'FMIPA', 'name' => 'Fakultas Matematika dan Ilmu Pengetahuan Alam'],
-            ['code' => 'FISIP', 'name' => 'Fakultas Ilmu Sosial dan Politik'],
-            ['code' => 'FP', 'name' => 'Fakultas Pertanian'],
-            ['code' => 'FPSI', 'name' => 'Fakultas Psikologi'],
-            ['code' => 'FIB', 'name' => 'Fakultas Ilmu Budaya'],
+            ['code' => 'E', 'name' => 'Fakultas Teknik', 'dean_name' => 'test', 'is_active' => true],
+            ['code' => 'B', 'name' => 'Fakultas Ekonomi dan Bisnis', 'dean_name' => 'Dr. Citra', 'is_active' => true],
+            ['code' => 'D', 'name' => 'Fakultas Kesehatan', 'dean_name' => 'Dr. Dian', 'is_active' => true],
+            ['code' => 'K', 'name' => 'Fakultas Kedokteran', 'dean_name' => 'Dr. Eka', 'is_active' => true],
+            ['code' => 'A', 'name' => 'Fakultas Ilmu Komputer', 'dean_name' => 'Dr. Fajar', 'is_active' => true],
         ];
 
         foreach ($faculties as $data) {
