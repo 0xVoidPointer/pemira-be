@@ -90,9 +90,17 @@ class ElectionController extends Controller
     {
         $activePeriod = $this->getActivePeriod();
 
-        $category = $this->getCategory($categoryId, $activePeriod->id);
+        $this->getCategory($categoryId, $activePeriod->id);
 
-        $candidates = Candidate::with('members')->where('category_id', $categoryId)->get();
+        $candidates = Candidate::with('members')
+            ->where('category_id', $categoryId)
+            ->get();
+
+        $nonEmptyBox = $candidates->where('is_empty_box', false);
+
+        if ($nonEmptyBox->count() > 1) {
+            $candidates = $nonEmptyBox->values();
+        }
 
         return response()->json($candidates);
     }
