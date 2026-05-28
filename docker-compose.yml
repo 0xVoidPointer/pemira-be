@@ -1,0 +1,19 @@
+services:
+  app:
+    image: akmalmp241/pemira-app:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pemira-app
+#    ports:
+      #- "8000:80"
+    env_file:
+      - .env
+    networks:
+      - private-net
+    # extra_hosts:
+    #   - "host.docker.internal:host-gateway"
+
+networks:
+  private-net:
+    external: true

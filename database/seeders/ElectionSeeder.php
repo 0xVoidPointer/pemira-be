@@ -13,6 +13,7 @@ use App\Models\Student;
 use App\Models\User;
 use App\Models\VoteTally;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class ElectionSeeder extends Seeder
 {
@@ -70,8 +71,8 @@ class ElectionSeeder extends Seeder
             ]);
 
             $faculty = $facultyPool->random();
-            $ketua = Student::factory()->forFaculty($faculty)->create();
-            $wakil = Student::factory()->forFaculty($facultyPool->random())->create();
+            $ketua = $this->makeStudent($faculty);
+            $wakil = $this->makeStudent($facultyPool->random());
 
             CandidateMember::factory()->ketua()->create([
                 'candidate_id' => $candidate->id,
@@ -98,7 +99,7 @@ class ElectionSeeder extends Seeder
                 'number' => $i,
             ]);
 
-            $student = Student::factory()->forFaculty($facultyPool->random())->create();
+            $student = $this->makeStudent($facultyPool->random());
 
             CandidateMember::factory()->create([
                 'candidate_id' => $candidate->id,
@@ -111,5 +112,20 @@ class ElectionSeeder extends Seeder
                 'vote_count' => fake()->numberBetween(0, 300),
             ]);
         }
+    }
+
+    private function makeStudent(Faculty $faculty): Student
+    {
+        $existing = Student::where('faculty_id', $faculty->id)->count();
+        $year = fake()->numberBetween(2018, 2025);
+        $seq = $existing + 1;
+        $nim = sprintf('%s%02d%06d', strtoupper($faculty->code), $year % 100, $seq);
+
+        return Student::factory()->forFaculty($faculty)->create([
+            'nim' => $nim,
+            'email' => strtolower($nim).'@student.pemira.test',
+            'password' => Hash::make('student123'),
+            'enrollment_year' => $year,
+        ]);
     }
 }
