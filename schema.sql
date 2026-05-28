@@ -69,13 +69,18 @@ CREATE TABLE election_periods
 
 CREATE TABLE election_schedules
 (
-    id            CHAR(36)  NOT NULL PRIMARY KEY DEFAULT (UUID()),
-    period_id     CHAR(36)  NOT NULL,
-    vote_start_at TIMESTAMP NOT NULL,
-    vote_end_at   TIMESTAMP NOT NULL,
-    created_at    TIMESTAMP NOT NULL,
-    updated_at    TIMESTAMP NOT NULL,
-    CONSTRAINT chk_periods_vote_window CHECK (vote_end_at > vote_start_at)
+    id               CHAR(36)  NOT NULL PRIMARY KEY DEFAULT (UUID()),
+    period_id        CHAR(36)  NOT NULL,
+    scope_faculty_id CHAR(36)  NOT NULL,
+    vote_start_at    TIMESTAMP NOT NULL,
+    vote_end_at      TIMESTAMP NOT NULL,
+    created_at       TIMESTAMP NOT NULL,
+    updated_at       TIMESTAMP NOT NULL,
+    CONSTRAINT chk_periods_vote_window CHECK (vote_end_at > vote_start_at),
+    KEY idx_category_scope_faculty (scope_faculty_id),
+    KEY idx_category_period (period_id),
+    CONSTRAINT fk_category_faculty FOREIGN KEY (scope_faculty_id) REFERENCES faculties (id) ON DELETE RESTRICT
+
 ) ENGINE = InnoDB;
 
 CREATE TABLE election_categories
