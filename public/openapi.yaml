@@ -154,6 +154,37 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /api/election/active-period/votes:
+    post:
+      tags: [Election (Active)]
+      summary: Cast votes for the active election period
+      description: Submits a batch of votes (one per category) for the authenticated student. All categories scoped to the student must be voted on in the same request.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VoteRequest'
+      responses:
+        '200':
+          description: Votes recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: No active election period or already voted in a category
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
 components:
   securitySchemes:
     bearerAuth:
@@ -189,6 +220,12 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
+    UnprocessableEntity:
+      description: Validation Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationError'
 
   schemas:
     Error:
@@ -196,6 +233,18 @@ components:
       properties:
         error:
           type: string
+
+    ValidationError:
+      type: object
+      properties:
+        message:
+          type: string
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
 
     MessageResponse:
       type: object
@@ -360,3 +409,24 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/CandidateMember'
+
+    VoteItem:
+      type: object
+      required: [category_id, candidate_id]
+      properties:
+        category_id:
+          type: string
+          format: uuid
+        candidate_id:
+          type: string
+          format: uuid
+
+    VoteRequest:
+      type: object
+      required: [votes]
+      properties:
+        votes:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/VoteItem'
