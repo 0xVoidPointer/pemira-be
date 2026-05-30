@@ -11,6 +11,7 @@ use App\Models\Ballot;
 use App\Models\Candidate;
 use App\Models\ElectionCategory;
 use App\Models\ElectionPeriod;
+use App\Models\ElectionSchedule;
 use App\Models\Student;
 use App\Models\VoteTally;
 use Illuminate\Auth\AuthenticationException;
@@ -112,9 +113,7 @@ class ElectionController extends Controller
         $activePeriod = ElectionPeriod::query()->where('status', ElectionPeriodStatus::Voting)
             ->first();
 
-        if (! $activePeriod) {
-            throw new ConflictHttpException('no active election period');
-        }
+        if (! $activePeriod) throw new ConflictHttpException('no active election period');
 
         $validatedData = $request->validated();
 
@@ -124,9 +123,8 @@ class ElectionController extends Controller
                 ->where('period_id', $activePeriod->id);
         })->count();
 
-        if ($categoriesCount !== count($validatedData['votes'])) {
+        if ($categoriesCount !== count($validatedData['votes']))
             throw new BadRequestHttpException('invalid votes count');
-        }
 
         foreach ($validatedData['votes'] as $vote) {
             $categoryId = $vote['category_id'] ?? null;
@@ -139,35 +137,37 @@ class ElectionController extends Controller
                         ->Where('period_id', $periodId);
                 })->first();
 
-                if (! $category) {
-                    throw new BadRequestHttpException('there is invalid category id');
-                }
+                if (! $category) throw new BadRequestHttpException('there is invalid category id');
 
-                $isValidCandidate = Candidate::query()->where('id', $candidateId)->where('category_id', $categoryId)->exists();
+                $isValidCandidate = Candidate::query()
+                    ->where('id', $candidateId)
+                    ->where('category_id', $categoryId)
+                    ->exists();
 
-                if (! $isValidCandidate) {
-                    throw new BadRequestHttpException('there is invalid candidate id');
-                }
+                if (! $isValidCandidate) throw new BadRequestHttpException('there is invalid candidate id');
             }
         }
 
         $claims = auth()->guard('api')->payload();
 
-        if (! $claims) {
-            throw new AuthenticationException;
-        }
+        if (! $claims) throw new AuthenticationException;
 
-        if ($claims->get('role') !== UserRole::Mahasiswa->value) {
-            throw new AuthenticationException;
-        }
+        if ($claims->get('role') !== UserRole::Mahasiswa->value) throw new AuthenticationException;
 
         $studentId = $claims->get('sub');
 
         $student = Student::query()->find($studentId);
 
-        if (! $student) {
-            throw new AuthenticationException;
-        }
+        if (! $student) throw new AuthenticationException;
+
+        $schedule = ElectionSchedule::query()
+            ->where('period_id', $activePeriod->id)
+            ->where('scope_faculty_id', $student->faculty_id)
+            ->where('vote_start_at', '<=', now())
+            ->where('vote_end_at', '>=', now())
+            ->first();
+
+        if (! $schedule) throw new ConflictHttpException('voting is not open for your faculty');
 
         DB::transaction(function () use ($validatedData, $studentId, $request) {
             foreach ($validatedData['votes'] as $vote) {
